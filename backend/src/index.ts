@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import userRoutes from "./routes/users.routes"
+import userRoutes from "./routes/auth.routes"
 import mongoose from "mongoose";
 import 'dotenv/config'
 
