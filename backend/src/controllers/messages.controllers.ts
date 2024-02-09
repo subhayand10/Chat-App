@@ -7,6 +7,7 @@ import { Request, Response } from "express";
 const createMessage = async (req: Request, res: Response) => {
   try {
     const { conversationId, senderId, message, receiverId = "" } = req.body;
+    console.log(conversationId)
     if (!senderId || !message)
       return res.status(400).send("Please fill all required fields");
     if (conversationId === "new" && receiverId) {
@@ -24,7 +25,9 @@ const createMessage = async (req: Request, res: Response) => {
     } else if (!conversationId && !receiverId) {
       return res.status(400).send("Please fill all required fields");
     }
+    console.log(conversationId);
     const newMessage = new Messages({ conversationId, senderId, message });
+    console.log(newMessage)
     await newMessage.save();
     res.status(200).send("Message sent successfully");
   } catch (error) {

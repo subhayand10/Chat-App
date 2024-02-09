@@ -17,10 +17,12 @@ const createConversation= async (req:Request, res:Response) => {
 
 const getConversation= async (req:Request, res:Response) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.params.conversationId;
+    console.log(await Conversations.find())
     const conversations = await Conversations.find({
       members: { $in: [userId] },
     });
+    console.log(conversations)
     const conversationUserData = Promise.all(
       conversations.map(async (conversation) => {
         const receiverId = conversation.members.find(

@@ -1,9 +1,44 @@
 import { Input } from "@/components/ui/input";
 import Img1 from "../../src/assets/img1.jpg";
+import { useEffect, useState } from "react";
+import axios from "axios";
 //import Img2 from "../../src/assets/img2.jpg";
 
 const Dashboard = () => {
-  const usersArr = ["John", "Mary", "Bob", "Vans", "Soham"];
+  const [conversationsArr, setConversationsArr] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [user, setUser] = useState({});
+  const [receiverName, setReceiverName] = useState("");
+  const usersArr = ["dsa"];
+  useEffect(() => {
+    (async function () {
+      try {
+        if (localStorage.getItem("user")) {
+          const userObj = JSON.parse(localStorage.getItem("user"));
+          setUser(userObj.user);
+          const response = await axios.get(
+            `http://localhost:8000/conversations/${userObj.user.id}`
+          );
+          console.log(response.data);
+          setConversationsArr(response.data);
+        }
+      } catch (err) {
+        console.log(err.response.data);
+      }
+    })();
+  }, []);
+  const handleMessages = async (conversationId, receiverName) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/messages/${conversationId}`
+      );
+      setReceiverName(receiverName);
+      console.log(response.data);
+      setMessages(response.data);
+    } catch (err) {
+      console.log(err.response.data);
+    }
+  };
   return (
     <div className="h-screen w-screen bg-purple-300 flex">
       <div className="w-[25%] border border-red-100">
@@ -43,18 +78,22 @@ const Dashboard = () => {
             />
           </svg>
           <div>
-            <p>Subhayan</p>
+            <p>{user.fullName}</p>
             <p className="text-gray-500">My Account</p>
           </div>
         </div>
         <hr />
         <p className="m-9">Messages</p>
-        {usersArr.map((user, index) => {
+        {conversationsArr.map((user, index) => {
+          console.log(user.conversationId);
           return (
             <>
               <div
-                key={index}
+                key={user.conversationId}
                 className="flex justify-evenly items-center h-[12%]"
+                onClick={() => {
+                  handleMessages(user.conversationId, user.user.fullName);
+                }}
               >
                 <img
                   src={Img1}
@@ -62,7 +101,7 @@ const Dashboard = () => {
                   className="w-[60px] h-[60px] rounded-full border border-primary p-[2px]"
                 />
                 <div>
-                  <p>{user}</p>
+                  <p>{user.user.fullName}</p>
                   <p className="text-gray-500">Available</p>
                 </div>
               </div>
@@ -72,58 +111,56 @@ const Dashboard = () => {
         })}
       </div>
       <div className="w-[50%] border border-red-100">
-        <div className="bg-white border border-black h-[10%] flex justify-around items-center">
-          <div className="flex justify-start gap-5 ">
-            <img
-              src={Img1}
-              alt="dp"
-              className="w-[60px] h-[60px] rounded-full border border-primary p-[2px]"
-            />
-            <div>
-              <p>John</p>
-              <p className="text-gray-500">Online</p>
+        {messages.length != 0 ? (
+          <div className="bg-white border border-black h-[10%] flex justify-around items-center">
+            <div className="flex justify-start gap-5 ">
+              <img
+                src={Img1}
+                alt="dp"
+                className="w-[60px] h-[60px] rounded-full border border-primary p-[2px]"
+              />
+              <div>
+                <p>{receiverName}</p>
+                <p className="text-gray-500">Online</p>
+              </div>
             </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="icon icon-tabler icon-tabler-phone-outgoing"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="black"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2" />
+              <line x1="15" y1="9" x2="20" y2="4" />
+              <polyline points="16 4 20 4 20 8" />
+            </svg>
           </div>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon icon-tabler icon-tabler-phone-outgoing"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="black"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2" />
-            <line x1="15" y1="9" x2="20" y2="4" />
-            <polyline points="16 4 20 4 20 8" />
-          </svg>
-        </div>
-        <div className="bg-white border border-black h-[80%] flex flex-col justify-evenly px-5 overflow-y-scroll pt-10">
-          <div className="w-[40%]  text-wrap ">
-            ab, optio e fuga recusandae commodi dolorum omnis. Quibusdam?
-          </div>
-          <div className="w-[40%]  text-wrap ml-auto ">
-            ab, optio e fuga recusandae commodi dolorum omnis. Quibusdam?
-          </div>
-          <div className="w-[40%]  text-wrap ">
-            ab, optio e fuga recusandae commodi dolorum omnis. Quibusdam?
-          </div>
-          <div className="w-[40%]  text-wrap ml-auto ">
-            ab, optio e fuga recusandae commodi dolorum omnis. Quibusdam?
-          </div>
-          <div className="w-[40%]  text-wrap ">
-            ab, optio e fuga recusandae commodi dolorum omnis. Quibusdam?
-          </div>
-          <div className="w-[40%]  text-wrap ml-auto ">
-            ab, optio e fuga recusandae commodi dolorum omnis. Quibusdam?
-          </div>
-          <div className="w-[40%]  text-wrap ">
-            ab, optio e fuga recusandae commodi dolorum omnis. Quibusdam?
-          </div>
+        ) : (
+          ""
+        )}
+        <div className="bg-white border border-black h-[80%] flex flex-col justify-start px-5 overflow-y-scroll pt-10">
+          {messages.length != 0 ? (
+            messages.map((message) => {
+              return message.user.id == user.id ? (
+                <div className="w-[40%]  text-wrap ">{message.message}</div>
+              ) : (
+                <div className="w-[40%]  text-wrap ml-auto ">
+                  {message.message}
+                </div>
+              );
+            })
+          ) : (
+            <div className="w-full h-full flex justify-center items-center">
+              <span className="font-bold">Select a conversation</span>
+            </div>
+          )}
         </div>
         <div className="bg-white border border-black h-[10%] flex justify-evenly items-center">
           <Input placeholder="Type a message..." className="w-[70%]" />

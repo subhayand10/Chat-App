@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
+import axios from "axios";
 
 const formSchema = z.object({
   fullName: z.string(),
@@ -23,11 +24,10 @@ const formSchema = z.object({
   }),
 });
 
-
 export default function ProfileForm() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const location=useLocation()
-  const navigate=useNavigate()
+  const location = useLocation();
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -38,10 +38,37 @@ export default function ProfileForm() {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values);
+    //console.log(JSON.parse(values));
+    if (values.fullName) {
+      try{
+
+        const response = await axios.post(
+          "http://localhost:8000/register",
+          values
+        );
+        console.log(response.data);
+        navigate("/");
+      }
+      catch(err){
+        console.log(err.response.data);
+      }
+    }
+    else{
+       try {
+         const response = await axios.post(
+           "http://localhost:8000/login",
+           values
+         );
+         console.log(response.data);
+         localStorage.setItem("user", JSON.stringify(response.data));
+         navigate("/Dashboard");
+       } catch (err) {
+         console.log(err.response.data);
+       }
+    }
   }
 
   useEffect(() => {
@@ -75,7 +102,7 @@ export default function ProfileForm() {
                   <FormLabel className="text-indigo-900">Full name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter your mail"
+                      placeholder="Enter your name"
                       {...field}
                       ref={inputRef}
                     />
@@ -114,7 +141,7 @@ export default function ProfileForm() {
               <FormLabel className="text-indigo-900">Password</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Enter your mail"
+                  placeholder="Enter your password"
                   {...field}
                   ref={inputRef}
                 />
