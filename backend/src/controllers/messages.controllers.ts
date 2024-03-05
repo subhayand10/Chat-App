@@ -90,7 +90,27 @@ const getReceiver = async (req: Request, res: Response) => {
   }
 };
 
+const getAllUsers=async(req: Request,res: Response) => {
+  try {
+    const users = await Users.find();
+    const usersData = Promise.all(
+      users.map(async (user) => {
+        return {
+          user: {
+            email: user.email,
+            fullName: user.fullName,
+            receiverId: user._id,
+          },
+        };
+      })
+    );
+    res.status(200).json(await usersData);
+  } catch (error) {
+    console.log("Error", error);
+  }
+}
 
 
 
-export { createMessage, getMessages,getReceiver };
+
+export { createMessage, getMessages,getReceiver,getAllUsers };

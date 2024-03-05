@@ -6,10 +6,12 @@ import axios from "axios";
 
 const Dashboard = () => {
   const [conversationsArr, setConversationsArr] = useState([]);
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState({});
   const [user, setUser] = useState({});
+  const [inputMessage, setInputMessage] = useState("");
   const [receiverName, setReceiverName] = useState("");
-  const usersArr = ["dsa"];
+  const [usersArr, setUsersArr] = useState([]);
+  //const usersArr = ["dsa"];
   useEffect(() => {
     (async function () {
       try {
@@ -19,7 +21,11 @@ const Dashboard = () => {
           const response = await axios.get(
             `http://localhost:8000/conversations/${userObj.user.id}`
           );
+          const responseUsers = await axios.get(`http://localhost:8000/users`);
           console.log(response.data);
+          console.log(user);
+          console.log(responseUsers.data);
+          setUsersArr(responseUsers.data);
           setConversationsArr(response.data);
         }
       } catch (err) {
@@ -27,14 +33,51 @@ const Dashboard = () => {
       }
     })();
   }, []);
-  const handleMessages = async (conversationId, receiverName) => {
+  const handleMessages = async (conversationId, receiver) => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/messages/${conversationId}`
+        `http://localhost:8000/messages/${conversationId}?senderId=${user?.id}&&receiverId=${receiver.user?.receiverId}`
       );
-      setReceiverName(receiverName);
+      // setReceiverName(receiver.user.fullName);
+      setReceiverName(receiver);
+      // console.log(response.data);
+      // console.log(receiverName);
+      setMessages({ messages: response.data, receiver, conversationId });
+      console.log(messages);
+      console.log(receiver.user?.receiverId);
+    } catch (err) {
+      console.log(err.response.data);
+    }
+  };
+  // const createNewConversation=async(senderId,receiverId)=>{
+  //   try {
+  //     const response = await axios.post(
+  //       `http://localhost:8000/conversations`,
+  //       {
+  //         senderId: senderId,
+  //         receiverId: receiverId,
+  //       }
+  //     );
+  //     const convData = await axios.get(`http://localhost:8000/conversations/${user.id}`);
+  //     console.log(response.data)
+  //   } catch (err) {
+  //     console.log(err.response.data);
+  //   }
+
+  // }
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    try {
+      console.log(messages.receiver.user.receiverId);
+      const response = await axios.post(`http://localhost:8000/messages`, {
+        senderId: user.id,
+        receiverId: messages.receiver.user.receiverId,
+        message: inputMessage,
+        convsationId: messages.conversationId,
+      });
       console.log(response.data);
-      setMessages(response.data);
+      setInputMessage("");
+      handleMessages(messages.conversationId, receiverName);
     } catch (err) {
       console.log(err.response.data);
     }
@@ -84,15 +127,15 @@ const Dashboard = () => {
         </div>
         <hr />
         <p className="m-9">Messages</p>
+        {/* {conversationsArr.length==0} */}
         {conversationsArr.map((user, index) => {
-          console.log(user.conversationId);
           return (
             <>
               <div
                 key={user.conversationId}
                 className="flex justify-evenly items-center h-[12%]"
                 onClick={() => {
-                  handleMessages(user.conversationId, user.user.fullName);
+                  handleMessages(user.conversationId, user);
                 }}
               >
                 <img
@@ -111,7 +154,7 @@ const Dashboard = () => {
         })}
       </div>
       <div className="w-[50%] border border-red-100">
-        {messages.length != 0 ? (
+        {messages?.messages?.length != 0 || messages?.messages?.length == 0 ? (
           <div className="bg-white border border-black h-[10%] flex justify-around items-center">
             <div className="flex justify-start gap-5 ">
               <img
@@ -120,7 +163,7 @@ const Dashboard = () => {
                 className="w-[60px] h-[60px] rounded-full border border-primary p-[2px]"
               />
               <div>
-                <p>{receiverName}</p>
+                <p>{receiverName?.user?.fullName}</p>
                 <p className="text-gray-500">Online</p>
               </div>
             </div>
@@ -146,8 +189,8 @@ const Dashboard = () => {
           ""
         )}
         <div className="bg-white border border-black h-[80%] flex flex-col justify-start px-5 overflow-y-scroll pt-10">
-          {messages.length != 0 ? (
-            messages.map((message) => {
+          {messages?.messages?.length != 0 ? (
+            messages?.messages?.map((message) => {
               return message.user.id == user.id ? (
                 <div className="w-[40%]  text-wrap ">{message.message}</div>
               ) : (
@@ -163,23 +206,32 @@ const Dashboard = () => {
           )}
         </div>
         <div className="bg-white border border-black h-[10%] flex justify-evenly items-center">
-          <Input placeholder="Type a message..." className="w-[70%]" />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon icon-tabler icon-tabler-send"
-            width="30"
-            height="30"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="#2c3e50"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <line x1="10" y1="14" x2="21" y2="3" />
-            <path d="M21 3l-6.5 18a0.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a0.55 .55 0 0 1 0 -1l18 -6.5" />
-          </svg>
+          <Input
+            placeholder="Type a message..."
+            className="w-[70%]"
+            value={inputMessage}
+            onChange={(e) => {
+              setInputMessage(e.target.value);
+            }}
+          />
+          <button onClick={sendMessage}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="icon icon-tabler icon-tabler-send"
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="#2c3e50"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+              <path d="M21 3l-6.5 18a0.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a0.55 .55 0 0 1 0 -1l18 -6.5" />
+            </svg>
+          </button>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="icon icon-tabler icon-tabler-circle-plus"
@@ -199,7 +251,30 @@ const Dashboard = () => {
           </svg>
         </div>
       </div>
-      <div className="w-[25%] border border-red-100"></div>
+      <div className="w-[25%] border border-red-100">
+        {usersArr.map((userObj, index) => {
+          return (
+            <>
+              <div
+                key={index}
+                className="flex justify-evenly items-center h-[12%]"
+                onClick={() => {
+                  handleMessages("new", userObj);
+                }}
+              >
+                <img
+                  src={Img1}
+                  alt="dp"
+                  className="w-[60px] h-[60px] rounded-full border border-primary p-[2px]"
+                />
+                <div>
+                  <p>{userObj.user.fullName}</p>
+                </div>
+              </div>
+            </>
+          );
+        })}
+      </div>
     </div>
   );
 };
