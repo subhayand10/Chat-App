@@ -5,6 +5,7 @@ import axios from "axios";
 //import Img2 from "../../src/assets/img2.jpg";
 
 const Dashboard = () => {
+  const [load,setLoad] = useState(false);
   const [conversationsArr, setConversationsArr] = useState([]);
   const [messages, setMessages] = useState({});
   const [user, setUser] = useState({});
@@ -32,6 +33,7 @@ const Dashboard = () => {
         console.log(err.response.data);
       }
     })();
+    setLoad(true)
   }, []);
   const handleMessages = async (conversationId, receiver) => {
     try {
@@ -40,11 +42,13 @@ const Dashboard = () => {
       );
       // setReceiverName(receiver.user.fullName);
       setReceiverName(receiver);
-      // console.log(response.data);
+      console.log(response.data);
       // console.log(receiverName);
       setMessages({ messages: response.data, receiver, conversationId });
       console.log(messages);
       console.log(receiver.user?.receiverId);
+      console.log(receiver);
+      setLoad(false);
     } catch (err) {
       console.log(err.response.data);
     }
@@ -69,11 +73,14 @@ const Dashboard = () => {
     e.preventDefault();
     try {
       console.log(messages.receiver.user.receiverId);
+      console.log(messages)
+      console.log(messages.messages[0].user.conversationId);
       const response = await axios.post(`http://localhost:8000/messages`, {
         senderId: user.id,
         receiverId: messages.receiver.user.receiverId,
         message: inputMessage,
-        convsationId: messages.conversationId,
+        // conversationId: messages.conversationId,
+        conversationId: messages.messages[0].user.conversationId,
       });
       console.log(response.data);
       setInputMessage("");
@@ -154,7 +161,12 @@ const Dashboard = () => {
         })}
       </div>
       <div className="w-[50%] border border-red-100">
-        {messages?.messages?.length != 0 || messages?.messages?.length == 0 ? (
+        {load ? (
+          <div className="w-full h-full flex justify-center items-center">
+            <span className="font-bold">Select a conversation</span>
+          </div>
+        ) : messages?.messages?.length != 0 ||
+          messages?.messages?.length == 0 ? (
           <div className="bg-white border border-black h-[10%] flex justify-around items-center">
             <div className="flex justify-start gap-5 ">
               <img
@@ -188,36 +200,61 @@ const Dashboard = () => {
         ) : (
           ""
         )}
-        <div className="bg-white border border-black h-[80%] flex flex-col justify-start px-5 overflow-y-scroll pt-10">
-          {messages?.messages?.length != 0 ? (
-            messages?.messages?.map((message) => {
-              return message.user.id == user.id ? (
-                <div className="w-[40%]  text-wrap ">{message.message}</div>
-              ) : (
-                <div className="w-[40%]  text-wrap ml-auto ">
-                  {message.message}
-                </div>
-              );
-            })
-          ) : (
-            <div className="w-full h-full flex justify-center items-center">
-              <span className="font-bold">Select a conversation</span>
-            </div>
-          )}
-        </div>
-        <div className="bg-white border border-black h-[10%] flex justify-evenly items-center">
-          <Input
-            placeholder="Type a message..."
-            className="w-[70%]"
-            value={inputMessage}
-            onChange={(e) => {
-              setInputMessage(e.target.value);
-            }}
-          />
-          <button onClick={sendMessage}>
+        {load ? (
+          ""
+        ) : (
+          <div className="bg-white border border-black h-[80%] flex flex-col justify-start px-5 overflow-y-scroll pt-10">
+            {messages?.messages?.length != 0 ? (
+              messages?.messages?.map((message) => {
+                return message.user.id == user.id ? (
+                  <div className="w-[40%]  text-wrap ">{message.message}</div>
+                ) : (
+                  <div className="w-[40%]  text-wrap ml-auto ">
+                    {message.message}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="w-full h-full flex justify-center items-center">
+                <span className="font-bold">Select a conversation</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {load ? (
+          ""
+        ) : (
+          <div className="bg-white border border-black h-[10%] flex justify-evenly items-center">
+            <Input
+              placeholder="Type a message..."
+              className="w-[70%]"
+              value={inputMessage}
+              onChange={(e) => {
+                setInputMessage(e.target.value);
+              }}
+            />
+            <button onClick={sendMessage}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="icon icon-tabler icon-tabler-send"
+                width="30"
+                height="30"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="#2c3e50"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+                <path d="M21 3l-6.5 18a0.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a0.55 .55 0 0 1 0 -1l18 -6.5" />
+              </svg>
+            </button>
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="icon icon-tabler icon-tabler-send"
+              className="icon icon-tabler icon-tabler-circle-plus"
               width="30"
               height="30"
               viewBox="0 0 24 24"
@@ -228,28 +265,12 @@ const Dashboard = () => {
               stroke-linejoin="round"
             >
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <line x1="10" y1="14" x2="21" y2="3" />
-              <path d="M21 3l-6.5 18a0.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a0.55 .55 0 0 1 0 -1l18 -6.5" />
+              <circle cx="12" cy="12" r="9" />
+              <line x1="9" y1="12" x2="15" y2="12" />
+              <line x1="12" y1="9" x2="12" y2="15" />
             </svg>
-          </button>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="icon icon-tabler icon-tabler-circle-plus"
-            width="30"
-            height="30"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="#2c3e50"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <circle cx="12" cy="12" r="9" />
-            <line x1="9" y1="12" x2="15" y2="12" />
-            <line x1="12" y1="9" x2="12" y2="15" />
-          </svg>
-        </div>
+          </div>
+        )}
       </div>
       <div className="w-[25%] border border-red-100">
         {usersArr.map((userObj, index) => {
@@ -258,7 +279,8 @@ const Dashboard = () => {
               <div
                 key={index}
                 className="flex justify-evenly items-center h-[12%]"
-                onClick={() => {
+                onClick={(e) => {
+                  console.log(e.target.value);
                   handleMessages("new", userObj);
                 }}
               >

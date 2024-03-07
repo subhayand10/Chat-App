@@ -19,7 +19,7 @@ const createMessage = async (req: Request, res: Response) => {
         conversationId: newCoversation._id,
         senderId,
         message,
-      });
+      } );
       await newMessage.save();
       return res.status(200).send("Message sent successfully");
     } else if (!conversationId && !receiverId) {
@@ -38,13 +38,13 @@ const createMessage = async (req: Request, res: Response) => {
 const getMessages = async (req: Request, res: Response) => {
   try {
     const checkMessages = async (conversationId:string) => {
-      console.log(conversationId, "conversationId");
+      console.log(conversationId, "conversationIdsss");
       const messages = await Messages.find({ conversationId });
       const messageUserData = Promise.all(
         messages.map(async (message) => {
           const user = await Users.findById(message.senderId);
           return {
-            user: { id: user?._id, email: user?.email, fullName: user?.fullName },
+            user: { id: user?._id, email: user?.email, fullName: user?.fullName,conversationId },
             message: message.message,
           };
         })
@@ -57,9 +57,12 @@ const getMessages = async (req: Request, res: Response) => {
         members: { $all: [req.query.senderId, req.query.receiverId] },
       });
       if (checkConversation.length > 0) {
+        console.log("TEST")
+        console.log(checkConversation[0]._id.toString());
         checkMessages(checkConversation[0]._id.toString());
       } else {
-        return res.status(200).json([]);
+        //return res.status(200).json([]);
+        return res.status(200).json([{user:{conversationId: "new"}}]);
       }
     } else {
       checkMessages(conversationId);
