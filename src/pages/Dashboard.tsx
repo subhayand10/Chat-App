@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input";
 import Img1 from "../../src/assets/img1.jpg";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import  io  from "socket.io-client";
 //import Img2 from "../../src/assets/img2.jpg";
 
 const Dashboard = () => {
@@ -12,7 +13,12 @@ const Dashboard = () => {
   const [inputMessage, setInputMessage] = useState("");
   const [receiverName, setReceiverName] = useState("");
   const [usersArr, setUsersArr] = useState([]);
+  const [socket, setSocket] = useState(null);
   //const usersArr = ["dsa"];
+  useEffect(()=>{
+    const socket = io("http://localhost:8000");
+    setSocket(socket);
+  },[])
   useEffect(() => {
     (async function () {
       try {
@@ -35,6 +41,23 @@ const Dashboard = () => {
     })();
     setLoad(true)
   }, []);
+
+  useEffect(() => {
+    socket?.emit("addUser", user?.id);
+    socket?.on("getUsers", (users) => {
+      console.log("activeUsers :>> ", users);
+    });
+    socket?.on("getMessage", (data) => {
+      setMessages((prev) => ({
+        ...prev,
+        messages: [
+          ...prev.messages,
+          { user: data.user, message: data.message },
+        ],
+      }));
+    });
+  }, [socket]);
+
   const handleMessages = async (conversationId, receiver) => {
     try {
       const response = await axios.get(
@@ -72,6 +95,12 @@ const Dashboard = () => {
   const sendMessage = async (e) => {
     e.preventDefault();
     try {
+      socket?.emit("sendMessage", {
+        senderId: user.id,
+        receiverId: messages.receiver.user.receiverId,
+        message: inputMessage,
+        conversationId: messages.messages[0].user.conversationId,
+      });
       console.log(messages.receiver.user.receiverId);
       console.log(messages)
       console.log(messages.messages[0].user.conversationId);
