@@ -36,6 +36,7 @@ export default function ProfileForm() {
       password: "",
     },
   });
+  const deployedUrl = "https://chat-app-wnta.onrender.com";
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -46,7 +47,7 @@ export default function ProfileForm() {
       try{
 
         const response = await axios.post(
-          "http://localhost:8000/register",
+          deployedUrl+"/register",
           values
         );
         console.log(response.data);
@@ -59,7 +60,7 @@ export default function ProfileForm() {
     else{
        try {
          const response = await axios.post(
-           "http://localhost:8000/login",
+           deployedUrl+"/login",
            values
          );
          console.log(response.data);

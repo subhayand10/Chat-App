@@ -15,8 +15,10 @@ const Dashboard = () => {
   const [usersArr, setUsersArr] = useState([]);
   const [socket, setSocket] = useState(null);
   //const usersArr = ["dsa"];
+  const deployedUrl = "https://chat-app-wnta.onrender.com";
+  //const localUrl = "http://localhost:8000";
   useEffect(()=>{
-    const socket = io("http://localhost:8000");
+    const socket = io(deployedUrl);
     setSocket(socket);
   },[])
   useEffect(() => {
@@ -26,9 +28,9 @@ const Dashboard = () => {
           const userObj = JSON.parse(localStorage.getItem("user"));
           setUser(userObj.user);
           const response = await axios.get(
-            `http://localhost:8000/conversations/${userObj.user.id}`
+            deployedUrl+`/conversations/${userObj.user.id}`
           );
-          const responseUsers = await axios.get(`http://localhost:8000/users`);
+          const responseUsers = await axios.get(deployedUrl+`/users`);
           console.log(response.data);
           console.log(user);
           console.log(responseUsers.data);
@@ -61,7 +63,7 @@ const Dashboard = () => {
   const handleMessages = async (conversationId, receiver) => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/messages/${conversationId}?senderId=${user?.id}&&receiverId=${receiver.user?.receiverId}`
+        deployedUrl+`/messages/${conversationId}?senderId=${user?.id}&&receiverId=${receiver.user?.receiverId}`
       );
       // setReceiverName(receiver.user.fullName);
       setReceiverName(receiver);
@@ -104,7 +106,7 @@ const Dashboard = () => {
       console.log(messages.receiver.user.receiverId);
       console.log(messages)
       console.log(messages.messages[0].user.conversationId);
-      const response = await axios.post(`http://localhost:8000/messages`, {
+      const response = await axios.post(deployedUrl+`/messages`, {
         senderId: user.id,
         receiverId: messages.receiver.user.receiverId,
         message: inputMessage,
