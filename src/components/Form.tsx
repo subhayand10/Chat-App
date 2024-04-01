@@ -42,7 +42,7 @@ export default function ProfileForm() {
   // const deployedUrl = "https://chat-app-wnta.onrender.com";
    //const deployedUrl = "http://localhost:8000";
    const deployedUrl =
-     "http://ec2-3-110-42-202.ap-south-1.compute.amazonaws.com";
+     "https://ec2-3-110-42-202.ap-south-1.compute.amazonaws.com";
 
 
   // 2. Define a submit handler.

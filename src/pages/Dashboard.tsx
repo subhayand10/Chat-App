@@ -18,7 +18,7 @@ const Dashboard = () => {
   //const deployedUrl = "https://chat-app-wnta.onrender.com";
   //const deployedUrl = "http://localhost:8000";
   //const localUrl = "http://localhost:8000";
-  const deployedUrl ="http://ec2-3-110-42-202.ap-south-1.compute.amazonaws.com";
+  const deployedUrl ="https://ec2-3-110-42-202.ap-south-1.compute.amazonaws.com";
   useEffect(() => {
     const socket = io(deployedUrl);
     setSocket(socket);
