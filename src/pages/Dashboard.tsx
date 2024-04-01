@@ -2,11 +2,11 @@ import { Input } from "@/components/ui/input";
 import Img1 from "../../src/assets/img1.jpg";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import  io  from "socket.io-client";
+import io from "socket.io-client";
 //import Img2 from "../../src/assets/img2.jpg";
 
 const Dashboard = () => {
-  const [load,setLoad] = useState(false);
+  const [load, setLoad] = useState(false);
   const [conversationsArr, setConversationsArr] = useState([]);
   const [messages, setMessages] = useState({});
   const [user, setUser] = useState({});
@@ -15,12 +15,14 @@ const Dashboard = () => {
   const [usersArr, setUsersArr] = useState([]);
   const [socket, setSocket] = useState(null);
   //const usersArr = ["dsa"];
-  const deployedUrl = "https://chat-app-wnta.onrender.com";
+  //const deployedUrl = "https://chat-app-wnta.onrender.com";
+  //const deployedUrl = "http://localhost:8000";
   //const localUrl = "http://localhost:8000";
-  useEffect(()=>{
+  const deployedUrl ="http://ec2-3-110-42-202.ap-south-1.compute.amazonaws.com";
+  useEffect(() => {
     const socket = io(deployedUrl);
     setSocket(socket);
-  },[])
+  }, []);
   useEffect(() => {
     (async function () {
       try {
@@ -28,9 +30,9 @@ const Dashboard = () => {
           const userObj = JSON.parse(localStorage.getItem("user"));
           setUser(userObj.user);
           const response = await axios.get(
-            deployedUrl+`/conversations/${userObj.user.id}`
+            deployedUrl + `/conversations/${userObj.user.id}`
           );
-          const responseUsers = await axios.get(deployedUrl+`/users`);
+          const responseUsers = await axios.get(deployedUrl + `/users`);
           console.log(response.data);
           console.log(user);
           console.log(responseUsers.data);
@@ -41,7 +43,7 @@ const Dashboard = () => {
         console.log(err.response.data);
       }
     })();
-    setLoad(true)
+    setLoad(true);
   }, []);
 
   useEffect(() => {
@@ -63,7 +65,8 @@ const Dashboard = () => {
   const handleMessages = async (conversationId, receiver) => {
     try {
       const response = await axios.get(
-        deployedUrl+`/messages/${conversationId}?senderId=${user?.id}&&receiverId=${receiver.user?.receiverId}`
+        deployedUrl +
+          `/messages/${conversationId}?senderId=${user?.id}&&receiverId=${receiver.user?.receiverId}`
       );
       // setReceiverName(receiver.user.fullName);
       setReceiverName(receiver);
@@ -95,6 +98,9 @@ const Dashboard = () => {
 
   // }
   const sendMessage = async (e) => {
+    console.log(e.key)
+    if(e.key && e.key!=="Enter")
+      return
     e.preventDefault();
     try {
       socket?.emit("sendMessage", {
@@ -104,9 +110,9 @@ const Dashboard = () => {
         conversationId: messages.messages[0].user.conversationId,
       });
       console.log(messages.receiver.user.receiverId);
-      console.log(messages)
+      console.log(messages);
       console.log(messages.messages[0].user.conversationId);
-      const response = await axios.post(deployedUrl+`/messages`, {
+      const response = await axios.post(deployedUrl + `/messages`, {
         senderId: user.id,
         receiverId: messages.receiver.user.receiverId,
         message: inputMessage,
@@ -159,19 +165,22 @@ const Dashboard = () => {
             />
           </svg>
           <div>
-            <p>{user.fullName}</p>
-            <p className="text-gray-500">My Account</p>
+            <p className="text-3xl font-semibold">{user.fullName}</p>
+            <p className="text-gray-500 ">My Account</p>
           </div>
         </div>
         <hr />
-        <p className="m-9">Messages</p>
+        <p className="flex justify-center text-2xl font-semibold">
+          {" "}
+          Current Messages
+        </p>
         {/* {conversationsArr.length==0} */}
         {conversationsArr.map((user, index) => {
           return (
             <>
               <div
                 key={user.conversationId}
-                className="flex justify-evenly items-center h-[12%]"
+                className=" mt-9 flex justify-evenly items-center h-[12%]"
                 onClick={() => {
                   handleMessages(user.conversationId, user);
                 }}
@@ -181,8 +190,8 @@ const Dashboard = () => {
                   alt="dp"
                   className="w-[60px] h-[60px] rounded-full border border-primary p-[2px]"
                 />
-                <div>
-                  <p>{user.user.fullName}</p>
+                <div className="w-[50%]">
+                  <p className="text-xl font-semibold">{user.user.fullName}</p>
                   <p className="text-gray-500">Available</p>
                 </div>
               </div>
@@ -206,7 +215,9 @@ const Dashboard = () => {
                 className="w-[60px] h-[60px] rounded-full border border-primary p-[2px]"
               />
               <div>
-                <p>{receiverName?.user?.fullName}</p>
+                <p className="text-2xl font-semibold">
+                  {receiverName?.user?.fullName}
+                </p>
                 <p className="text-gray-500">Online</p>
               </div>
             </div>
@@ -238,10 +249,16 @@ const Dashboard = () => {
             {messages?.messages?.length != 0 ? (
               messages?.messages?.map((message) => {
                 return message.user.id == user.id ? (
-                  <div className="w-[40%]  text-wrap ">{message.message}</div>
+                  <div className="w-[100%] flex justify-start items-start pb-3">
+                    <p className="rounded-md font-semibold text-xl  bg-purple-300   text-wrap p-2">
+                      {message.message}
+                    </p>
+                  </div>
                 ) : (
-                  <div className="w-[40%]  text-wrap ml-auto ">
-                    {message.message}
+                  <div className="w-[100%] flex justify-end items-end pb-3 ">
+                    <p className="bg-slate-200 text-wrap rounded-md font-semibold text-xl p-2 ">
+                      {message.message}
+                    </p>
                   </div>
                 );
               })
@@ -264,6 +281,7 @@ const Dashboard = () => {
               onChange={(e) => {
                 setInputMessage(e.target.value);
               }}
+              onKeyDown={sendMessage}
             />
             <button onClick={sendMessage}>
               <svg
@@ -318,10 +336,12 @@ const Dashboard = () => {
                 <img
                   src={Img1}
                   alt="dp"
-                  className="w-[60px] h-[60px] rounded-full border border-primary p-[2px]"
+                  className="w-[60px] h-[60px] rounded-full border border-primary "
                 />
-                <div>
-                  <p>{userObj.user.fullName}</p>
+                <div className="w-[50%]">
+                  <p className="text-xl font-semibold">
+                    {userObj.user.fullName}
+                  </p>
                 </div>
               </div>
             </>
